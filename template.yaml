@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    Detects and removes SNS subscriptions that belong to non-existent topics.
+
+Globals:
+    Function:
+        Timeout: 20
+
+Resources:
+    SnsAbandonedSubscriptionCleaner:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: sns-abandoned-subscription-cleaner
+            Handler: com.amazon.mlewk.tools.SubscriptionHandler::handleRequest
+            Runtime: java8
+            MemorySize: 512
+            Environment:
+                Variables:
+                    DRY_RUN: true # Runs in dry run mode per default, only logs abandoned subscription ARNs, no modifications are made.
+            Policies:
+                -   Statement:
+                        -   Effect: Allow
+                            Action:
+                                - 'sns:GetTopicAttributes'
+                                - 'sns:ListSubscriptions'
+#                                - 'sns:Unsubscribe' # Required to perform actual cleanup, when running in non dry run mode.
+                            Resource: '*'
+            Events:
+                CloudWatchEvent:
+                    Type: Schedule
+                    Properties:
+                        Schedule: cron(0 0 * * ? *)

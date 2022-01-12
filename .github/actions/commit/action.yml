@@ -1,0 +1,27 @@
+name: commit
+description: Commits and pushes changes to the origin if present
+inputs:
+  username:
+    required: true
+    description: User name to use for the commit.
+  useremail:
+    required: true
+    description: User email to use for the commit.
+  message:
+    required: true
+    description: Message to use for the commit.
+runs:
+  using: "composite"
+  steps:
+    - name: Check for modified files
+      shell: bash
+      id: git-check
+      run: echo ::set-output name=modified::$(if [ -n "$(git status --porcelain)" ]; then echo "true"; else echo "false"; fi)
+    - name: Commit and push changes if required
+      shell: bash
+      if: steps.git-check.outputs.modified == 'true'
+      run: |
+        git config --global user.name '${{ inputs.username }}'
+        git config --global user.email '${{ inputs.useremail }}'
+        git commit -am "${{ inputs.message }}"
+        git push

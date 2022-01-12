@@ -1,0 +1,22 @@
+name: commit
+description: Commits and pushes changes to the origin if present
+inputs:
+  label:
+    required: true
+    description: Label to use for the badge generation.
+  message:
+    required: true
+    description: Message to use for the badge generation.
+  color:
+    required: true
+    description: Color to use for the badge generation.
+    default: green
+  location:
+    required: true
+    description: Location for the badge.
+runs:
+  using: "composite"
+  steps:
+    - name: Commit and push changes if required
+      shell: bash
+      run: curl -o ${{ inputs.location }} "https://img.shields.io/static/v1?label=${{ inputs.label }}&message=${{ inputs.message }}&color=${{ inputs.color }}"
